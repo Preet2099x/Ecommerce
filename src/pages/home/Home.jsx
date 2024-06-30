@@ -3,8 +3,7 @@ import Layout from '../../components/layout/Layout'
 
 function Home() {
   return (
-    // <Layout>Home</Layout>
-    <div>home</div>
+    <Layout>Home</Layout>
   )
 }
 
