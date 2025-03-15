@@ -13,12 +13,14 @@ connectDB();
 const app = express();
 
 //middlewares
-app.use(express.json)
+app.use(express.json())
 app.use(morgan('dev'))
 
 //rest api
 app.get('/', (req,res)=>{
-    res.send("<h1>Welcome to Ecommerce app</h1>");
+    res.send({
+        message: "Great Success!"
+    });
 });
 
 //PORT
