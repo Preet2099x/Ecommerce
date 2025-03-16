@@ -1,11 +1,13 @@
 import userModel from '../models/userModel.js';
-import { hashPassword } from './../helpers/authHelper.js';
+import { comparePassword, hashPassword } from './../helpers/authHelper.js';
+import JWT from 'jsonwebtoken';
 
+// REGISTER CONTROLLER
 export const registerController = async (req, res) => {
     try {
         const { name, email, password, phone, address } = req.body;
 
-        // 🛑 Validations (Better structure)
+        // Validation
         if (!name || !email || !password || !phone || !address) {
             return res.status(400).json({ 
                 success: false, 
@@ -13,7 +15,7 @@ export const registerController = async (req, res) => {
             });
         }
 
-        // 🔍 Check if user already exists
+        // Check if user already exists
         const existingUser = await userModel.findOne({ email });
 
         if (existingUser) {
@@ -23,10 +25,10 @@ export const registerController = async (req, res) => {
             });
         }
 
-        // 🔒 Hash password
+        // Hash password
         const hashedPassword = await hashPassword(password);
 
-        // 📝 Save user in DB
+        // Save user in DB
         const user = await new userModel({
             name,
             email,
@@ -35,7 +37,7 @@ export const registerController = async (req, res) => {
             password: hashedPassword
         }).save();
 
-        // ✅ Success Response
+        // Success Response
         res.status(201).json({
             success: true,
             message: 'User registered successfully',
@@ -48,6 +50,63 @@ export const registerController = async (req, res) => {
             success: false,
             message: 'Error in Registration',
             error: error.message,
+        });
+    }
+};
+
+//LOGIN CONTROLLER
+export const loginController = async (req,res) => {
+    try{
+        const {email,password} = req.body;
+
+        //Validation
+        if(!email || !password) {
+            return res.status(404).json({
+                success: false,
+                message: 'Inavlid UserName or Password'
+            });
+        }
+
+        //Check user
+        const user = await userModel.findOne({email});
+        if(!user) {
+            return res.status(404).send({
+                success: false,
+                message: "Email is not Registred"
+            });
+        }
+
+        //Check if password is correct
+        const match = await comparePassword(password,user.password);
+        if(!match) {
+            return res.status(200).send({
+                success: false,
+                message: "Invalid Password",
+            });
+        }
+
+        //token
+        const token = await JWT.sign({_id: user._id}, process.env.JWT_SECRET,{expiresIn:'7d'});
+        res.status(200).send({
+            success: true,
+            message: 'Login Successful',
+            users: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                address: user.address,
+            },
+            token,
+        });
+    }
+
+    catch(error){
+        console.log(error)
+        res.status(500).json({
+            success: false,
+            message:  'Error in Login',
+            error: error.message
         });
     }
 };
