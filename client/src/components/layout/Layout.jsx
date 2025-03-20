@@ -2,16 +2,15 @@ import React from "react";
 import Header from "./Header";
 import Footer from "./Footer";
 
-const Layout = ({children}) => {
+const Layout = ({ children }) => {
   return (
-    <div>
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       <Header />
-      <main>
-        {children}
-      </main>
+      <main style={{ flex: 1 }}>{children}</main>
       <Footer />
     </div>
   );
 };
 
 export default Layout;
+
